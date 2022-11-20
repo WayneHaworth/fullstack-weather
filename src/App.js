@@ -3,8 +3,7 @@ import { useEffect, useState } from "react";
 
 import getKey from "./key";
 
-const SearchResults = ({countries, searchText}) => {
-  
+const SearchResults = ({countries, searchText}) => {  
   const filteredCountries = countries.filter(country => country.name.common.toLowerCase().includes(searchText.toLowerCase()))
   
   if (searchText === '') { return <p>Search for a country</p> }
@@ -15,11 +14,7 @@ const SearchResults = ({countries, searchText}) => {
 
 const RenderCountries = ({country}) => {
   const [detailsToggle,setDetailsToggle] = useState(false);
-  const [location, setLocation] = useState([])
-
-  const handleToggle = () => {
-    setDetailsToggle(!detailsToggle)
-  }
+  const handleToggle = () => { setDetailsToggle(!detailsToggle) }
   
   return (
     <div>
@@ -34,35 +29,32 @@ const RenderCountries = ({country}) => {
 
 const RenderCountry = ({country}) => {
   const api = getKey()
-  const [weather, setWeather] = useState([])
   const [weatherIcon, setWeatherIcon] = useState("")
+  const [wind, setWind] = useState("")
+  const [temperature, setTemperature] = useState(0)
 
   useEffect(() => {
     axios
       .get(`https://api.openweathermap.org/data/2.5/weather?q=${country.capital[0]}&units=metric&appid=${api}`)
       .then(response => {
-        console.log("Response", response.data)
-        setWeather(response.data.weather)
         setWeatherIcon(response.data.weather[0].icon)
+        setWind(response.data.wind)
+        setTemperature(response.data.main.temp)
       })
   }, [])
   
   return (
     <div>
       <h1>{country.name.common}</h1>
-      <p>{country.capital}</p>
-      <p>{country.area}</p>
-
+      <p>capital {country.capital}</p>
+      <p>area {country.area}</p>
       <h2>languages:</h2>
-      <ul>
-        {Object.entries(country.languages).map(([key, value]) => { return <li key={key}>{value}</li> } )}
-      </ul>
+      <ul>{Object.entries(country.languages).map(([key, value]) => { return <li key={key}>{value}</li> } )}</ul>
       <img src={country.flags.png} />
       <h2>Weather in {country.name.common}</h2>
-      <p>temperature: </p>
-      {console.log("Weather", weather)}
+      <p>temperature: {temperature.toFixed(0)}</p>
       <img src={`http://openweathermap.org/img/w/${weatherIcon}.png`} />
-
+      <p>wind {wind.speed} m/s</p>
     </div>
   )
 }
@@ -70,6 +62,7 @@ const RenderCountry = ({country}) => {
 function App() {
   const [countries, setCountries] = useState([])
   const [searchText, setSearchText] = useState('')
+  const handleSearchText = (event) => {setSearchText(event.target.value)}
 
   useEffect(() => {
     axios
@@ -78,11 +71,7 @@ function App() {
         const countries = response.data  
         setCountries(countries)
       })
-  }, [])
-
-  const handleSearchText = (event) => {
-    setSearchText(event.target.value)
-  }  
+  }, [])    
 
   return (
     <div>
